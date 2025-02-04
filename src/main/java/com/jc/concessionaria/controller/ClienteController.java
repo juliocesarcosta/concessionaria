@@ -3,15 +3,30 @@ package com.jc.concessionaria.controller;
 import com.jc.concessionaria.model.Cliente;
 import com.jc.concessionaria.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+
+
+import java.io.IOException;
+import java.io.StringWriter;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/clientes")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
 public class ClienteController {
 
@@ -50,7 +65,29 @@ public class ClienteController {
         clienteService.deleteCliente(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping(value = "/csv", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> getClientesAsCsv() {
+        List<Cliente> clientes = clienteService.getAllClientes();
+
+        StringWriter writer = new StringWriter();
+        try (CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("ID Cliente", "Nome", "Email", "Telefone"))) {
+            for (Cliente cliente : clientes) {
+                csvPrinter.printRecord(cliente.getIdCliente(), cliente.getName(), cliente.getEmail(), cliente.getPhone());
+            }
+            csvPrinter.flush();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao gerar CSV: " + e.getMessage());
+        }
+
+        // Configuração do cabeçalho para fazer o download do arquivo CSV
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=clientes.csv");
+
+        return ResponseEntity.ok().headers(headers).body(writer.toString());
+    }
 }
+
 
 
 

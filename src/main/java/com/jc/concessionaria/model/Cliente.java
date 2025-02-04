@@ -39,7 +39,34 @@ public class Cliente {
     public void setIdCliente(Long idCliente) {
         this.idCliente = idCliente;
     }
+
+    // Getter e Setter para outros campos
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }
+
+
 
 
 
